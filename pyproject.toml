@@ -30,14 +30,14 @@ dependencies = ["httpx>=0.25,<1"]
 dev = ["pytest>=8", "pytest-cov"]
 
 [project.urls]
-Documentation = "https://docs.FormaTex.com/sdk/python"
+Documentation = "https://docs.formatex.io/sdk/python"
 Repository = "https://github.com/forma-tex/python-sdk"
-Homepage = "https://FormaTex.com"
+Homepage = "https://formatex.io"
 
 [tool.hatch.build.targets.wheel]
-packages = ["FormaTex"]
+packages = ["formatex"]
 
 [tool.pytest.ini_options]
 markers = [
-  "e2e: end-to-end tests against a live API (require FormaTex_E2E_BASE_URL)",
+  "e2e: end-to-end tests against a live API (require FORMATEX_E2E_BASE_URL)",
 ]
