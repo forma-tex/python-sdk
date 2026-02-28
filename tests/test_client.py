@@ -30,7 +30,7 @@ from formatex import (
     UsageStats,
     file_entry,
 )
-from FormaTex.exceptions import FormaTexError as _FormaTexError
+from formatex.exceptions import FormaTexError as _FormaTexError
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -309,8 +309,8 @@ class TestWaitForJob:
         ]
         client._http.get_bytes.return_value = FAKE_PDF
 
-        with patch("FormaTex.client.time.sleep") as mock_sleep:
-            with patch("FormaTex.client.time.monotonic", return_value=0.0):
+        with patch("formatex.client.time.sleep") as mock_sleep:
+            with patch("formatex.client.time.monotonic", return_value=0.0):
                 result = client.wait_for_job("j1", timeout=60.0, poll_interval=2.0)
 
         assert result.pdf == FAKE_PDF
@@ -325,8 +325,8 @@ class TestWaitForJob:
             "result": {"error": "Undefined control sequence", "log": "! error log"},
         }
 
-        with patch("FormaTex.client.time.sleep"):
-            with patch("FormaTex.client.time.monotonic", return_value=0.0):
+        with patch("formatex.client.time.sleep"):
+            with patch("formatex.client.time.monotonic", return_value=0.0):
                 with pytest.raises(CompilationError) as exc_info:
                     client.wait_for_job("j1")
 
@@ -338,8 +338,8 @@ class TestWaitForJob:
             "id": "j1", "status": "processing", "result": None
         }
         # monotonic: first call sets deadline=10.0, second call returns 999 (expired)
-        with patch("FormaTex.client.time.monotonic", side_effect=[0.0, 999.0]):
-            with patch("FormaTex.client.time.sleep"):
+        with patch("formatex.client.time.monotonic", side_effect=[0.0, 999.0]):
+            with patch("formatex.client.time.sleep"):
                 with pytest.raises(FormaTexError, match="did not complete within 10"):
                     client.wait_for_job("j1", timeout=10.0)
 

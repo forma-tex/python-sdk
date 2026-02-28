@@ -40,7 +40,7 @@ from formatex import (
     UsageStats,
     file_entry,
 )
-from FormaTex.exceptions import CompilationError, PlanLimitError
+from formatex.exceptions import CompilationError, PlanLimitError
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
