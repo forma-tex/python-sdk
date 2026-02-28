@@ -26,6 +26,9 @@ classifiers = [
 
 dependencies = ["httpx>=0.25,<1"]
 
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov"]
+
 [project.urls]
 Documentation = "https://docs.formatex.com/sdk/python"
 Repository = "https://github.com/forma-tex/python-sdk"

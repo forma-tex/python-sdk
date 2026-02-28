@@ -1,6 +1,6 @@
 # FormatEx Python SDK
 
-Official Python client for the [FormatEx](https://formatex.com) LaTeX-to-PDF API.
+Official Python client for the [FormatEx](https://formatex.io) LaTeX-to-PDF API.
 
 ## Installation
 
