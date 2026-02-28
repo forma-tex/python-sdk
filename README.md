@@ -1,6 +1,6 @@
 # FormatEx Python SDK
 
-Official Python client for the FormatEx LaTeX-to-PDF API.
+Official Python client for the [FormatEx](https://formatex.com) LaTeX-to-PDF API.
 
 ## Installation
 
@@ -8,43 +8,174 @@ Official Python client for the FormatEx LaTeX-to-PDF API.
 pip install formatex
 ```
 
+Requires Python ≥ 3.9.
+
 ## Quick Start
 
 ```python
 from formatex import FormatExClient
 
-client = FormatExClient("fx_your_api_key")
-
-# Basic compile
-result = client.compile(r"\documentclass{article}\begin{document}Hello\end{document}")
-with open("output.pdf", "wb") as f:
-    f.write(result.pdf)
-
-# Smart compile (auto-detect engine + auto-fix)
-result = client.compile_smart(r"\documentclass{article}\begin{document}Hello\end{document}")
-
-# Compile directly to file
-client.compile_to_file(
-    r"\documentclass{article}\begin{document}Hello\end{document}",
-    "output.pdf",
-    smart=True,
-)
-
-# Check syntax (free, no quota cost)
-check = client.check_syntax(r"\documentclass{article}\begin{document}\end{document}")
-print(check.valid, check.errors)
-
-# Usage stats
-usage = client.get_usage()
-print(f"{usage.compilations_used}/{usage.compilations_limit} compilations this month")
+with FormatExClient("fx_your_api_key") as client:
+    result = client.compile(
+        r"\documentclass{article}\begin{document}Hello, world!\end{document}"
+    )
+    # result.pdf       → bytes
+    # result.engine    → "pdflatex"
+    # result.duration_ms → 412
+    with open("output.pdf", "wb") as f:
+        f.write(result.pdf)
 ```
 
-## Engines
+## Compilation
+
+### Sync (immediate response)
 
 ```python
-result = client.compile(latex, engine="xelatex")  # Unicode + modern fonts
-result = client.compile(latex, engine="lualatex")  # Lua scripting
-result = client.compile(latex, engine="latexmk")   # Auto multi-pass
+# Choose your engine
+result = client.compile(latex, engine="pdflatex")   # default
+result = client.compile(latex, engine="xelatex")    # Unicode + modern fonts
+result = client.compile(latex, engine="lualatex")   # Lua scripting
+result = client.compile(latex, engine="latexmk")    # automatic multi-pass
+
+# Smart compile: auto-detects the right engine + attempts auto-fix
+result = client.compile_smart(latex)
+
+# Compile directly to a file
+client.compile_to_file(latex, "output.pdf")
+client.compile_to_file(latex, "output.pdf", engine="xelatex")
+client.compile_to_file(latex, "output.pdf", smart=True)
+```
+
+### Async (long-running documents)
+
+```python
+from formatex import FormatExClient
+
+with FormatExClient("fx_your_api_key") as client:
+    # Submit and get a job ID immediately
+    job = client.async_compile(latex, engine="pdflatex")
+    print(job.job_id, job.status)  # "abc-123", "pending"
+
+    # Option 1: blocking wait (polls automatically)
+    result = client.wait_for_job(job.job_id)
+    with open("output.pdf", "wb") as f:
+        f.write(result.pdf)
+
+    # Option 2: manual polling loop
+    import time
+    while True:
+        status = client.get_job(job.job_id)
+        if status.status == "completed":
+            pdf = client.get_job_pdf(job.job_id)  # one-time download
+            break
+        elif status.status == "failed":
+            print("Failed:", status.error)
+            break
+        time.sleep(2)
+
+    # Retrieve just the log
+    log = client.get_job_log(job.job_id)
+
+    # Clean up server-side (optional, PDF auto-deletes after download)
+    client.delete_job(job.job_id)
+```
+
+## Multi-File Projects
+
+Use `file_entry` to attach companion files (images, `.bib`, `.cls`, etc.):
+
+```python
+from pathlib import Path
+from formatex import FormatExClient, file_entry
+
+latex = r"""
+\documentclass{article}
+\usepackage{graphicx}
+\begin{document}
+\includegraphics[width=\linewidth]{logo.png}
+\bibliography{refs}
+\end{document}
+"""
+
+with FormatExClient("fx_your_api_key") as client:
+    result = client.compile(
+        latex,
+        engine="pdflatex",
+        files=[
+            file_entry("logo.png", Path("assets/logo.png")),   # auto-read from disk
+            file_entry("refs.bib", Path("references.bib")),
+        ],
+    )
+    Path("output.pdf").write_bytes(result.pdf)
+```
+
+`file_entry(name, content)` accepts:
+- `Path` — reads the file automatically
+- `bytes` — raw binary data, base64-encoded for you
+- `str` — already base64-encoded content passed through as-is
+
+## Lint (Static Analysis)
+
+Run `chktex` without consuming compilation quota:
+
+```python
+from formatex import FormatExClient
+
+latex = r"""
+\documentclass{article}
+\begin{document}
+Hello world.
+\end{document}
+"""
+
+with FormatExClient("fx_your_api_key") as client:
+    result = client.lint(latex)
+
+    print(f"Valid: {result.valid}")
+    print(f"Errors: {result.error_count}, Warnings: {result.warning_count}")
+
+    for d in result.diagnostics:
+        print(f"  Line {d.line}:{d.column} [{d.severity}] {d.message}")
+```
+
+Integrate into CI:
+
+```python
+result = client.lint(source)
+if not result.valid:
+    raise SystemExit(f"LaTeX lint failed: {result.error_count} error(s)")
+```
+
+## Convert to Word (DOCX)
+
+```python
+with FormatExClient("fx_your_api_key") as client:
+    result = client.convert(latex)
+    Path("document.docx").write_bytes(result.docx)
+
+    # Or write directly to a file
+    client.convert_to_file(latex, "document.docx")
+```
+
+## Syntax Check
+
+Free endpoint — does not count against your quota:
+
+```python
+check = client.check_syntax(latex)
+print(check.valid, check.errors)
+```
+
+## Usage Stats & Engines
+
+```python
+usage = client.get_usage()
+print(f"{usage.compilations_used}/{usage.compilations_limit} compilations this month")
+print(f"Overage: {usage.overage}")
+
+engines = client.list_engines()
+for e in engines:
+    print(e["name"], e["available"])
 ```
 
 ## Error Handling
@@ -58,30 +189,37 @@ from formatex import (
     PlanLimitError,
 )
 
-client = FormatExClient("fx_your_api_key")
-
-try:
-    result = client.compile(latex)
-except AuthenticationError:
-    print("Invalid API key")
-except CompilationError as e:
-    print(f"Compilation failed: {e}")
-    print(f"Compiler log: {e.log}")
-except RateLimitError as e:
-    print(f"Rate limited, retry after {e.retry_after}s")
-except PlanLimitError:
-    print("Plan limit exceeded, upgrade at https://formatex.com/pricing")
+with FormatExClient("fx_your_api_key") as client:
+    try:
+        result = client.compile(latex)
+    except AuthenticationError:
+        print("Invalid API key")
+    except CompilationError as e:
+        print(f"Compilation failed: {e}")
+        print(f"Compiler log:\n{e.log}")
+    except RateLimitError as e:
+        print(f"Rate limited — retry after {e.retry_after}s")
+    except PlanLimitError:
+        print("Plan limit exceeded, upgrade at https://formatex.com/pricing")
 ```
 
-## Self-Hosted
+## Self-Hosted / Custom URL
 
 ```python
-client = FormatExClient("fx_key", base_url="https://formatex.your-company.com")
+client = FormatExClient("fx_key", base_url="https://latex.your-company.com")
 ```
 
-## Context Manager
+## Type Reference
 
-```python
-with FormatExClient("fx_key") as client:
-    result = client.compile(latex)
-```
+All types are importable directly from `formatex`:
+
+| Type | Description |
+|------|-------------|
+| `CompileResult` | Sync compile result: `pdf`, `engine`, `duration_ms`, `size_bytes`, `log`, `job_id` |
+| `AsyncJob` | Submitted async job: `job_id`, `status` |
+| `JobResult` | Polled job state: `job_id`, `status`, `log`, `duration_ms`, `error`, `success` |
+| `LintResult` | Lint output: `diagnostics`, `duration_ms`, `error_count`, `warning_count`, `valid` |
+| `LintDiagnostic` | Single finding: `line`, `column`, `severity`, `message`, `source`, `code` |
+| `SyntaxResult` | Syntax check: `valid`, `errors` |
+| `ConvertResult` | DOCX output: `docx` (bytes), `size_bytes` |
+| `UsageStats` | Quota: `compilations_used`, `compilations_limit`, `overage`, `period_start`, `period_end` |

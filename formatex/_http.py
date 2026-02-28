@@ -33,8 +33,14 @@ class HTTPClient:
         self._raise_for_status(resp)
         return resp.json()
 
+    def get_bytes(self, path: str) -> bytes:
+        """GET a binary response (e.g. PDF download)."""
+        resp = self._client.get(path)
+        self._raise_for_status(resp)
+        return resp.content
+
     def post_json(self, path: str, body: dict) -> dict:
-        """POST with JSON body, expect JSON back (uses Accept header)."""
+        """POST with JSON body, expect JSON back."""
         resp = self._client.post(
             path,
             json=body,
@@ -43,11 +49,19 @@ class HTTPClient:
         self._raise_for_status(resp)
         return resp.json()
 
-    def post_pdf(self, path: str, body: dict) -> bytes:
-        """POST with JSON body, get raw PDF bytes back."""
+    def post_bytes(self, path: str, body: dict) -> bytes:
+        """POST with JSON body, get raw bytes back (e.g. DOCX)."""
         resp = self._client.post(path, json=body)
         self._raise_for_status(resp)
         return resp.content
+
+    def delete_json(self, path: str) -> dict:
+        """DELETE, expect JSON back (or empty body on 204)."""
+        resp = self._client.delete(path)
+        self._raise_for_status(resp)
+        if resp.status_code == 204 or not resp.content:
+            return {}
+        return resp.json()
 
     # -- error mapping ---------------------------------------------------------
 
