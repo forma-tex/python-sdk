@@ -23,7 +23,12 @@ jobs:
       - name: Run e2e tests against staging
         env:
           FORMATEX_E2E_BASE_URL: ${{ secrets.FORMATEX_E2E_BASE_URL }}
-        run: python -m pytest tests/test_e2e.py -m e2e --tb=short
+        run: |
+          if [ -z "$FORMATEX_E2E_BASE_URL" ]; then
+            echo "⚠️  FORMATEX_E2E_BASE_URL not set — skipping e2e tests"
+            exit 0
+          fi
+          python -m pytest tests/test_e2e.py -m e2e --tb=short
 
   build:
     name: Build distribution
