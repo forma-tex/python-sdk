@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import os
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -11,7 +12,8 @@ from typing import Any
 from formatex._http import HTTPClient
 from formatex.exceptions import FormaTexError
 
-DEFAULT_BASE_URL = "https://api.formatex.com"
+DEFAULT_BASE_URL = os.environ.get("FORMATEX_BASE_URL", "https://api.formatex.io")
+STAGING_BASE_URL = "https://api-test.formatex.zedmed.online"
 
 # ── Data classes ──────────────────────────────────────────────────────────────
 
@@ -161,9 +163,12 @@ class FormaTexClient:
         self,
         api_key: str,
         *,
-        base_url: str = DEFAULT_BASE_URL,
+        base_url: str | None = None,
+        staging: bool = False,
         timeout: float = 120.0,
     ):
+        if base_url is None:
+            base_url = STAGING_BASE_URL if staging else DEFAULT_BASE_URL
         self._http = HTTPClient(api_key=api_key, base_url=base_url, timeout=timeout)
 
     def close(self) -> None:
