@@ -1,6 +1,6 @@
 """FormaTex Python SDK — compile LaTeX to PDF."""
 
-from FormaTex.client import (
+from formatex.client import (
     FormaTexClient,
     AsyncJob,
     CompileResult,
@@ -12,7 +12,7 @@ from FormaTex.client import (
     UsageStats,
     file_entry,
 )
-from FormaTex.exceptions import (
+from formatex.exceptions import (
     FormaTexError,
     AuthenticationError,
     CompilationError,

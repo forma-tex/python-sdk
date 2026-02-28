@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import httpx
 
-from FormaTex.exceptions import (
+from formatex.exceptions import (
     FormaTexError,
     AuthenticationError,
     CompilationError,

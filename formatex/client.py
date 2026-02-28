@@ -8,10 +8,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from FormaTex._http import HTTPClient
-from FormaTex.exceptions import FormaTexError
+from formatex._http import HTTPClient
+from formatex.exceptions import FormaTexError
 
-DEFAULT_BASE_URL = "https://api.FormaTex.com"
+DEFAULT_BASE_URL = "https://api.formatex.com"
 
 # ── Data classes ──────────────────────────────────────────────────────────────
 
@@ -413,7 +413,7 @@ class FormaTexClient:
             :class:`~FormaTex.CompilationError`: If the job failed.
             :class:`~FormaTex.FormaTexError`: If the timeout is exceeded.
         """
-        from FormaTex.exceptions import CompilationError
+        from formatex.exceptions import CompilationError
 
         deadline = time.monotonic() + timeout
 
