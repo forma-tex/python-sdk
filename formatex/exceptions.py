@@ -1,8 +1,8 @@
-"""FormatEx exception hierarchy."""
+"""FormaTex exception hierarchy."""
 
 
-class FormatExError(Exception):
-    """Base exception for all FormatEx errors."""
+class FormaTexError(Exception):
+    """Base exception for all FormaTex errors."""
 
     def __init__(self, message: str, status_code: int | None = None, body: dict | None = None):
         super().__init__(message)
@@ -10,11 +10,11 @@ class FormatExError(Exception):
         self.body = body or {}
 
 
-class AuthenticationError(FormatExError):
+class AuthenticationError(FormaTexError):
     """Invalid or missing API key (401)."""
 
 
-class CompilationError(FormatExError):
+class CompilationError(FormaTexError):
     """LaTeX compilation failed (422). Contains `log` attribute with compiler output."""
 
     def __init__(self, message: str, log: str = "", **kwargs):
@@ -22,7 +22,7 @@ class CompilationError(FormatExError):
         self.log = log
 
 
-class RateLimitError(FormatExError):
+class RateLimitError(FormaTexError):
     """Too many requests (429). Contains `retry_after` in seconds."""
 
     def __init__(self, message: str, retry_after: float = 0, **kwargs):
@@ -30,5 +30,5 @@ class RateLimitError(FormatExError):
         self.retry_after = retry_after
 
 
-class PlanLimitError(FormatExError):
+class PlanLimitError(FormaTexError):
     """Plan limit exceeded (403/429). Upgrade required."""

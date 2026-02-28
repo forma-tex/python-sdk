@@ -3,14 +3,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "formatex"
-version = "1.0.0"
-description = "Python SDK for the FormatEx LaTeX-to-PDF API"
+name = "FormaTex"
+version = "1.0.1"
+description = "Python SDK for the FormaTex LaTeX-to-PDF API"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9"
-authors = [{ name = "FormatEx", email = "support@formatex.com" }]
-keywords = ["latex", "pdf", "formatex", "typesetting"]
+authors = [{ name = "FormaTex", email = "support@FormaTex.com" }]
+keywords = ["latex", "pdf", "FormaTex", "typesetting"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
@@ -30,14 +30,14 @@ dependencies = ["httpx>=0.25,<1"]
 dev = ["pytest>=8", "pytest-cov"]
 
 [project.urls]
-Documentation = "https://docs.formatex.com/sdk/python"
+Documentation = "https://docs.FormaTex.com/sdk/python"
 Repository = "https://github.com/forma-tex/python-sdk"
-Homepage = "https://formatex.com"
+Homepage = "https://FormaTex.com"
 
 [tool.hatch.build.targets.wheel]
-packages = ["formatex"]
+packages = ["FormaTex"]
 
 [tool.pytest.ini_options]
 markers = [
-  "e2e: end-to-end tests against a live API (require FORMATEX_E2E_BASE_URL)",
+  "e2e: end-to-end tests against a live API (require FormaTex_E2E_BASE_URL)",
 ]

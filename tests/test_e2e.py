@@ -1,20 +1,20 @@
-"""End-to-end tests against a live FormatEx API.
+"""End-to-end tests against a live FormaTex API.
 
 These tests simulate the complete user journey:
   1. Register a brand-new user (unique email per run)
   2. Login to obtain a JWT
   3. Create an API key via the dashboard API
-  4. Use that API key through FormatExClient for every SDK action
+  4. Use that API key through FormaTexClient for every SDK action
   5. Clean up (delete the test user)
 
 Usage
 -----
 Set the base URL then run with the `e2e` marker:
 
-    $env:FORMATEX_E2E_BASE_URL = "https://api-test.formatex.zedmed.online"
+    $env:FormaTex_E2E_BASE_URL = "https://api-test.FormaTex.zedmed.online"
     pytest tests/test_e2e.py -v -m e2e
 
-If FORMATEX_E2E_BASE_URL is not set the entire module is skipped automatically.
+If FormaTex_E2E_BASE_URL is not set the entire module is skipped automatically.
 
 Note: These tests create a real user, make real compilations, and consume quota.
       They are intentionally excluded from the default `pytest` run.
@@ -29,28 +29,28 @@ from pathlib import Path
 import httpx
 import pytest
 
-from formatex import (
+from FormaTex import (
     AsyncJob,
     CompileResult,
     ConvertResult,
-    FormatExClient,
+    FormaTexClient,
     JobResult,
     LintResult,
     SyntaxResult,
     UsageStats,
     file_entry,
 )
-from formatex.exceptions import CompilationError, PlanLimitError
+from FormaTex.exceptions import CompilationError, PlanLimitError
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-BASE_URL = os.environ.get("FORMATEX_E2E_BASE_URL", "").strip().strip('"').strip("'").rstrip("/")
+BASE_URL = os.environ.get("FormaTex_E2E_BASE_URL", "").strip().strip('"').strip("'").rstrip("/")
 
 pytestmark = pytest.mark.e2e
 
 if not BASE_URL:
     pytest.skip(
-        "FORMATEX_E2E_BASE_URL not set — skipping e2e tests",
+        "FormaTex_E2E_BASE_URL not set — skipping e2e tests",
         allow_module_level=True,
     )
 
@@ -59,7 +59,7 @@ if not BASE_URL:
 SIMPLE_DOC = r"""
 \documentclass{article}
 \begin{document}
-Hello from FormatEx E2E test.
+Hello from FormaTex E2E test.
 \end{document}
 """.strip()
 
@@ -93,7 +93,7 @@ def api_key() -> str:
       - Deletes the test user on teardown
     """
     run_id = uuid.uuid4().hex[:8]
-    email = f"sdk-e2e-{run_id}@test.formatex.internal"
+    email = f"sdk-e2e-{run_id}@test.FormaTex.internal"
     password = f"E2eTest-{run_id}!"
     name = f"SDK E2E {run_id}"
 
@@ -134,9 +134,9 @@ def api_key() -> str:
 
 
 @pytest.fixture(scope="session")
-def client(api_key: str) -> FormatExClient:
-    """Shared FormatExClient for the e2e session."""
-    c = FormatExClient(api_key, base_url=BASE_URL)
+def client(api_key: str) -> FormaTexClient:
+    """Shared FormaTexClient for the e2e session."""
+    c = FormaTexClient(api_key, base_url=BASE_URL)
     yield c
     c.close()
 
@@ -155,12 +155,12 @@ class TestHealthCheck:
 
 
 class TestEngines:
-    def test_list_engines_returns_nonempty(self, client: FormatExClient):
+    def test_list_engines_returns_nonempty(self, client: FormaTexClient):
         engines = client.list_engines()
         assert isinstance(engines, list)
         assert len(engines) > 0
 
-    def test_pdflatex_is_available(self, client: FormatExClient):
+    def test_pdflatex_is_available(self, client: FormaTexClient):
         engines = client.list_engines()
         # API returns list of strings e.g. ["pdflatex", "xelatex", ...]
         names = [e if isinstance(e, str) else e["name"] for e in engines]
@@ -171,14 +171,14 @@ class TestEngines:
 
 
 class TestUsage:
-    def test_get_usage_returns_stats(self, client: FormatExClient):
+    def test_get_usage_returns_stats(self, client: FormaTexClient):
         usage = client.get_usage()
         assert isinstance(usage, UsageStats)
         assert usage.plan != ""
         assert usage.compilations_limit >= 0
         assert usage.compilations_used >= 0
 
-    def test_period_dates_are_set(self, client: FormatExClient):
+    def test_period_dates_are_set(self, client: FormaTexClient):
         usage = client.get_usage()
         assert usage.period_start != ""
         assert usage.period_end != ""
@@ -188,12 +188,12 @@ class TestUsage:
 
 
 class TestSyntaxCheck:
-    def test_valid_doc_passes(self, client: FormatExClient):
+    def test_valid_doc_passes(self, client: FormaTexClient):
         result = client.check_syntax(SIMPLE_DOC)
         assert isinstance(result, SyntaxResult)
         assert result.valid is True
 
-    def test_schema_fields_present(self, client: FormatExClient):
+    def test_schema_fields_present(self, client: FormaTexClient):
         result = client.check_syntax(SIMPLE_DOC)
         # errors/warnings may be None when document is valid
         assert result.errors is None or isinstance(result.errors, list)
@@ -204,17 +204,17 @@ class TestSyntaxCheck:
 
 
 class TestLint:
-    def test_clean_doc_has_no_errors(self, client: FormatExClient):
+    def test_clean_doc_has_no_errors(self, client: FormaTexClient):
         result = client.lint(SIMPLE_DOC)
         assert isinstance(result, LintResult)
         assert result.error_count == 0
         assert result.valid is True
 
-    def test_diagnostics_is_list(self, client: FormatExClient):
+    def test_diagnostics_is_list(self, client: FormaTexClient):
         result = client.lint(SIMPLE_DOC)
         assert isinstance(result.diagnostics, list)
 
-    def test_duration_ms_is_positive(self, client: FormatExClient):
+    def test_duration_ms_is_positive(self, client: FormaTexClient):
         result = client.lint(SIMPLE_DOC)
         assert result.duration_ms >= 0
 
@@ -223,14 +223,14 @@ class TestLint:
 
 
 class TestSyncCompile:
-    def test_compile_returns_pdf(self, client: FormatExClient):
+    def test_compile_returns_pdf(self, client: FormaTexClient):
         result = client.compile(SIMPLE_DOC)
         assert isinstance(result, CompileResult)
         assert result.pdf[:4] == b"%PDF"
         assert result.size_bytes > 0
         assert result.duration_ms > 0
 
-    def test_compile_with_xelatex(self, client: FormatExClient):
+    def test_compile_with_xelatex(self, client: FormaTexClient):
         try:
             result = client.compile(SIMPLE_DOC, engine="xelatex")
             assert result.pdf[:4] == b"%PDF"
@@ -238,22 +238,22 @@ class TestSyncCompile:
         except PlanLimitError:
             pytest.skip("xelatex not available on this plan")
 
-    def test_compile_with_math(self, client: FormatExClient):
+    def test_compile_with_math(self, client: FormaTexClient):
         result = client.compile(BIB_DOC)
         assert result.pdf[:4] == b"%PDF"
 
-    def test_broken_latex_raises_compilation_error(self, client: FormatExClient):
+    def test_broken_latex_raises_compilation_error(self, client: FormaTexClient):
         with pytest.raises(CompilationError) as exc_info:
             client.compile(BROKEN_DOC)
         assert exc_info.value.log != ""  # compiler log is populated
 
-    def test_compile_to_file(self, client: FormatExClient, tmp_path: Path):
+    def test_compile_to_file(self, client: FormaTexClient, tmp_path: Path):
         out = tmp_path / "output.pdf"
         client.compile_to_file(SIMPLE_DOC, out)
         assert out.exists()
         assert out.read_bytes()[:4] == b"%PDF"
 
-    def test_compile_smart(self, client: FormatExClient):
+    def test_compile_smart(self, client: FormaTexClient):
         result = client.compile_smart(SIMPLE_DOC)
         assert result.pdf[:4] == b"%PDF"
 
@@ -262,7 +262,7 @@ class TestSyncCompile:
 
 
 class TestMultiFileCompile:
-    def test_compile_with_text_companion_file(self, client: FormatExClient):
+    def test_compile_with_text_companion_file(self, client: FormaTexClient):
         """Attach a .bib stub — compiler will process it without error."""
         bib_content = b"""
 @article{test2026,
@@ -292,26 +292,26 @@ Hello with a companion bib file.
 
 
 class TestAsyncCompile:
-    def test_submit_returns_job(self, client: FormatExClient):
+    def test_submit_returns_job(self, client: FormaTexClient):
         job = client.async_compile(SIMPLE_DOC)
         assert isinstance(job, AsyncJob)
         assert job.job_id != ""
         assert job.status in ("pending", "processing", "queued")
 
-    def test_get_job_returns_job_result(self, client: FormatExClient):
+    def test_get_job_returns_job_result(self, client: FormaTexClient):
         job = client.async_compile(SIMPLE_DOC)
         status = client.get_job(job.job_id)
         assert isinstance(status, JobResult)
         assert status.job_id == job.job_id
         assert status.status in ("pending", "processing", "completed", "failed")
 
-    def test_wait_for_job_returns_pdf(self, client: FormatExClient):
+    def test_wait_for_job_returns_pdf(self, client: FormaTexClient):
         job = client.async_compile(SIMPLE_DOC)
         result = client.wait_for_job(job.job_id, poll_interval=2.0, timeout=120.0)
         assert isinstance(result, CompileResult)
         assert result.pdf[:4] == b"%PDF"
 
-    def test_get_job_log_after_completion(self, client: FormatExClient):
+    def test_get_job_log_after_completion(self, client: FormaTexClient):
         import time
         job = client.async_compile(SIMPLE_DOC)
         # Poll manually so we can read the log BEFORE downloading the PDF
@@ -326,12 +326,12 @@ class TestAsyncCompile:
         log = client.get_job_log(job.job_id)
         assert isinstance(log, str)
 
-    def test_wait_for_job_broken_latex_raises(self, client: FormatExClient):
+    def test_wait_for_job_broken_latex_raises(self, client: FormaTexClient):
         job = client.async_compile(BROKEN_DOC)
         with pytest.raises(CompilationError):
             client.wait_for_job(job.job_id, timeout=120.0)
 
-    def test_delete_job(self, client: FormatExClient):
+    def test_delete_job(self, client: FormaTexClient):
         """Submit a job, wait for complete status, then delete WITHOUT downloading.
         PDF download auto-deletes the job, so we must delete before downloading.
         """
@@ -352,7 +352,7 @@ class TestAsyncCompile:
 
 
 class TestConvert:
-    def test_convert_returns_docx(self, client: FormatExClient):
+    def test_convert_returns_docx(self, client: FormaTexClient):
         try:
             result = client.convert(SIMPLE_DOC)
         except Exception as exc:
@@ -366,7 +366,7 @@ class TestConvert:
         assert result.docx[:2] == b"PK"
         assert result.size_bytes > 0
 
-    def test_convert_to_file(self, client: FormatExClient, tmp_path: Path):
+    def test_convert_to_file(self, client: FormaTexClient, tmp_path: Path):
         try:
             out = tmp_path / "doc.docx"
             client.convert_to_file(SIMPLE_DOC, out)
@@ -385,7 +385,7 @@ class TestConvert:
 class TestFullScenario:
     """Simulates what a CLI user does after receiving their API key."""
 
-    def test_complete_workflow(self, client: FormatExClient, tmp_path: Path):
+    def test_complete_workflow(self, client: FormaTexClient, tmp_path: Path):
         """
         1. Check engines available
         2. Lint the document

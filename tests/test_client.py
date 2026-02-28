@@ -1,8 +1,8 @@
-"""Unit tests for the FormatEx Python SDK.
+"""Unit tests for the FormaTex Python SDK.
 
 All tests mock the HTTP transport layer — no real API calls are made.
 Run with:  pytest
-Coverage:  pytest --cov=formatex --cov-report=term-missing
+Coverage:  pytest --cov=FormaTex --cov-report=term-missing
 """
 
 from __future__ import annotations
@@ -13,14 +13,14 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from formatex import (
+from FormaTex import (
     AsyncJob,
     AuthenticationError,
     CompilationError,
     CompileResult,
     ConvertResult,
-    FormatExClient,
-    FormatExError,
+    FormaTexClient,
+    FormaTexError,
     JobResult,
     LintDiagnostic,
     LintResult,
@@ -30,7 +30,7 @@ from formatex import (
     UsageStats,
     file_entry,
 )
-from formatex.exceptions import FormatExError as _FormatExError
+from FormaTex.exceptions import FormaTexError as _FormaTexError
 
 
 # ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -38,8 +38,8 @@ from formatex.exceptions import FormatExError as _FormatExError
 
 @pytest.fixture
 def client():
-    """FormatExClient with a fully-mocked HTTP layer."""
-    c = FormatExClient("fx_test_key_abc")
+    """FormaTexClient with a fully-mocked HTTP layer."""
+    c = FormaTexClient("fx_test_key_abc")
     c._http = MagicMock()
     return c
 
@@ -309,8 +309,8 @@ class TestWaitForJob:
         ]
         client._http.get_bytes.return_value = FAKE_PDF
 
-        with patch("formatex.client.time.sleep") as mock_sleep:
-            with patch("formatex.client.time.monotonic", return_value=0.0):
+        with patch("FormaTex.client.time.sleep") as mock_sleep:
+            with patch("FormaTex.client.time.monotonic", return_value=0.0):
                 result = client.wait_for_job("j1", timeout=60.0, poll_interval=2.0)
 
         assert result.pdf == FAKE_PDF
@@ -325,22 +325,22 @@ class TestWaitForJob:
             "result": {"error": "Undefined control sequence", "log": "! error log"},
         }
 
-        with patch("formatex.client.time.sleep"):
-            with patch("formatex.client.time.monotonic", return_value=0.0):
+        with patch("FormaTex.client.time.sleep"):
+            with patch("FormaTex.client.time.monotonic", return_value=0.0):
                 with pytest.raises(CompilationError) as exc_info:
                     client.wait_for_job("j1")
 
         assert "Undefined control sequence" in str(exc_info.value)
         assert "error log" in exc_info.value.log
 
-    def test_raises_formatex_error_on_timeout(self, client):
+    def test_raises_FormaTex_error_on_timeout(self, client):
         client._http.get_json.return_value = {
             "id": "j1", "status": "processing", "result": None
         }
         # monotonic: first call sets deadline=10.0, second call returns 999 (expired)
-        with patch("formatex.client.time.monotonic", side_effect=[0.0, 999.0]):
-            with patch("formatex.client.time.sleep"):
-                with pytest.raises(FormatExError, match="did not complete within 10"):
+        with patch("FormaTex.client.time.monotonic", side_effect=[0.0, 999.0]):
+            with patch("FormaTex.client.time.sleep"):
+                with pytest.raises(FormaTexError, match="did not complete within 10"):
                     client.wait_for_job("j1", timeout=10.0)
 
 
@@ -525,7 +525,7 @@ class TestListEngines:
 
 class TestContextManager:
     def test_close_called_on_exit(self):
-        with FormatExClient("fx_key") as c:
+        with FormaTexClient("fx_key") as c:
             c._http = MagicMock()
         c._http.close.assert_called_once()
 
@@ -534,11 +534,11 @@ class TestContextManager:
 
 
 class TestExceptions:
-    def test_all_exceptions_inherit_formatex_error(self):
-        assert issubclass(AuthenticationError, FormatExError)
-        assert issubclass(CompilationError, FormatExError)
-        assert issubclass(RateLimitError, FormatExError)
-        assert issubclass(PlanLimitError, FormatExError)
+    def test_all_exceptions_inherit_FormaTex_error(self):
+        assert issubclass(AuthenticationError, FormaTexError)
+        assert issubclass(CompilationError, FormaTexError)
+        assert issubclass(RateLimitError, FormaTexError)
+        assert issubclass(PlanLimitError, FormaTexError)
 
     def test_compilation_error_has_log(self):
         err = CompilationError("failed", log="! Undefined control sequence")
@@ -548,6 +548,6 @@ class TestExceptions:
         err = RateLimitError("too many requests", retry_after=30.5)
         assert err.retry_after == 30.5
 
-    def test_formatex_error_status_code(self):
-        err = FormatExError("oops", status_code=500)
+    def test_FormaTex_error_status_code(self):
+        err = FormaTexError("oops", status_code=500)
         assert err.status_code == 500

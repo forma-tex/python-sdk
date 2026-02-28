@@ -1,11 +1,11 @@
-# FormatEx Python SDK
+# FormaTex Python SDK
 
-Official Python client for the [FormatEx](https://formatex.io) LaTeX-to-PDF API.
+Official Python client for the [FormaTex](https://FormaTex.io) LaTeX-to-PDF API.
 
 ## Installation
 
 ```bash
-pip install formatex
+pip install FormaTex
 ```
 
 Requires Python ≥ 3.9.
@@ -13,9 +13,9 @@ Requires Python ≥ 3.9.
 ## Quick Start
 
 ```python
-from formatex import FormatExClient
+from FormaTex import FormaTexClient
 
-with FormatExClient("fx_your_api_key") as client:
+with FormaTexClient("fx_your_api_key") as client:
     result = client.compile(
         r"\documentclass{article}\begin{document}Hello, world!\end{document}"
     )
@@ -49,9 +49,9 @@ client.compile_to_file(latex, "output.pdf", smart=True)
 ### Async (long-running documents)
 
 ```python
-from formatex import FormatExClient
+from FormaTex import FormaTexClient
 
-with FormatExClient("fx_your_api_key") as client:
+with FormaTexClient("fx_your_api_key") as client:
     # Submit and get a job ID immediately
     job = client.async_compile(latex, engine="pdflatex")
     print(job.job_id, job.status)  # "abc-123", "pending"
@@ -86,7 +86,7 @@ Use `file_entry` to attach companion files (images, `.bib`, `.cls`, etc.):
 
 ```python
 from pathlib import Path
-from formatex import FormatExClient, file_entry
+from FormaTex import FormaTexClient, file_entry
 
 latex = r"""
 \documentclass{article}
@@ -97,7 +97,7 @@ latex = r"""
 \end{document}
 """
 
-with FormatExClient("fx_your_api_key") as client:
+with FormaTexClient("fx_your_api_key") as client:
     result = client.compile(
         latex,
         engine="pdflatex",
@@ -119,7 +119,7 @@ with FormatExClient("fx_your_api_key") as client:
 Run `chktex` without consuming compilation quota:
 
 ```python
-from formatex import FormatExClient
+from FormaTex import FormaTexClient
 
 latex = r"""
 \documentclass{article}
@@ -128,7 +128,7 @@ Hello world.
 \end{document}
 """
 
-with FormatExClient("fx_your_api_key") as client:
+with FormaTexClient("fx_your_api_key") as client:
     result = client.lint(latex)
 
     print(f"Valid: {result.valid}")
@@ -149,7 +149,7 @@ if not result.valid:
 ## Convert to Word (DOCX)
 
 ```python
-with FormatExClient("fx_your_api_key") as client:
+with FormaTexClient("fx_your_api_key") as client:
     result = client.convert(latex)
     Path("document.docx").write_bytes(result.docx)
 
@@ -181,15 +181,15 @@ for e in engines:
 ## Error Handling
 
 ```python
-from formatex import (
-    FormatExClient,
+from FormaTex import (
+    FormaTexClient,
     AuthenticationError,
     CompilationError,
     RateLimitError,
     PlanLimitError,
 )
 
-with FormatExClient("fx_your_api_key") as client:
+with FormaTexClient("fx_your_api_key") as client:
     try:
         result = client.compile(latex)
     except AuthenticationError:
@@ -200,18 +200,18 @@ with FormatExClient("fx_your_api_key") as client:
     except RateLimitError as e:
         print(f"Rate limited — retry after {e.retry_after}s")
     except PlanLimitError:
-        print("Plan limit exceeded, upgrade at https://formatex.com/pricing")
+        print("Plan limit exceeded, upgrade at https://FormaTex.com/pricing")
 ```
 
 ## Self-Hosted / Custom URL
 
 ```python
-client = FormatExClient("fx_key", base_url="https://latex.your-company.com")
+client = FormaTexClient("fx_key", base_url="https://latex.your-company.com")
 ```
 
 ## Type Reference
 
-All types are importable directly from `formatex`:
+All types are importable directly from `FormaTex`:
 
 | Type | Description |
 |------|-------------|

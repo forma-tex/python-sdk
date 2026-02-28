@@ -1,4 +1,4 @@
-"""FormatEx Python client."""
+"""FormaTex Python client."""
 
 from __future__ import annotations
 
@@ -8,10 +8,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from formatex._http import HTTPClient
-from formatex.exceptions import FormatExError
+from FormaTex._http import HTTPClient
+from FormaTex.exceptions import FormaTexError
 
-DEFAULT_BASE_URL = "https://api.formatex.com"
+DEFAULT_BASE_URL = "https://api.FormaTex.com"
 
 # ── Data classes ──────────────────────────────────────────────────────────────
 
@@ -141,18 +141,18 @@ def file_entry(name: str, content: bytes | str | Path) -> dict:
 # ── Client ────────────────────────────────────────────────────────────────────
 
 
-class FormatExClient:
-    """High-level client for the FormatEx LaTeX-to-PDF API.
+class FormaTexClient:
+    """High-level client for the FormaTex LaTeX-to-PDF API.
 
     Initialise with an API key obtained from the dashboard::
 
-        from formatex import FormatExClient
+        from FormaTex import FormaTexClient
 
-        client = FormatExClient("fx_your_api_key")
+        client = FormaTexClient("fx_your_api_key")
 
     Use as a context manager to ensure the underlying HTTP connection is closed::
 
-        with FormatExClient("fx_your_api_key") as client:
+        with FormaTexClient("fx_your_api_key") as client:
             result = client.compile(r"\\documentclass{article}...")
             Path("out.pdf").write_bytes(result.pdf)
     """
@@ -170,7 +170,7 @@ class FormatExClient:
         """Close the underlying HTTP connection pool."""
         self._http.close()
 
-    def __enter__(self) -> "FormatExClient":
+    def __enter__(self) -> "FormaTexClient":
         return self
 
     def __exit__(self, *exc: Any) -> None:
@@ -204,9 +204,9 @@ class FormatExClient:
             :class:`CompileResult` with ``.pdf`` bytes and metadata.
 
         Raises:
-            :class:`~formatex.CompilationError`: LaTeX errors in source.
-            :class:`~formatex.PlanLimitError`: Monthly quota or plan restriction.
-            :class:`~formatex.AuthenticationError`: Invalid API key.
+            :class:`~FormaTex.CompilationError`: LaTeX errors in source.
+            :class:`~FormaTex.PlanLimitError`: Monthly quota or plan restriction.
+            :class:`~FormaTex.AuthenticationError`: Invalid API key.
         """
         body: dict[str, Any] = {"latex": latex, "engine": engine}
         if timeout is not None:
@@ -339,7 +339,7 @@ class FormatExClient:
             download the PDF (it is deleted from the server after download).
 
         Raises:
-            :class:`~formatex.FormatExError`: Job not found (expired or never existed).
+            :class:`~FormaTex.FormaTexError`: Job not found (expired or never existed).
         """
         data = self._http.get_json(f"/api/v1/jobs/{job_id}")
         result = data.get("result") or {}
@@ -410,10 +410,10 @@ class FormatExClient:
             :class:`CompileResult` with the compiled PDF bytes.
 
         Raises:
-            :class:`~formatex.CompilationError`: If the job failed.
-            :class:`~formatex.FormatExError`: If the timeout is exceeded.
+            :class:`~FormaTex.CompilationError`: If the job failed.
+            :class:`~FormaTex.FormaTexError`: If the timeout is exceeded.
         """
-        from formatex.exceptions import CompilationError
+        from FormaTex.exceptions import CompilationError
 
         deadline = time.monotonic() + timeout
 
@@ -440,7 +440,7 @@ class FormatExClient:
                 )
 
             if time.monotonic() >= deadline:
-                raise FormatExError(
+                raise FormaTexError(
                     f"job {job_id} did not complete within {timeout}s (status: {job.status})",
                     status_code=None,
                 )

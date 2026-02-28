@@ -1,7 +1,7 @@
-"""FormatEx Python SDK — compile LaTeX to PDF."""
+"""FormaTex Python SDK — compile LaTeX to PDF."""
 
-from formatex.client import (
-    FormatExClient,
+from FormaTex.client import (
+    FormaTexClient,
     AsyncJob,
     CompileResult,
     ConvertResult,
@@ -12,8 +12,8 @@ from formatex.client import (
     UsageStats,
     file_entry,
 )
-from formatex.exceptions import (
-    FormatExError,
+from FormaTex.exceptions import (
+    FormaTexError,
     AuthenticationError,
     CompilationError,
     RateLimitError,
@@ -22,7 +22,7 @@ from formatex.exceptions import (
 
 __all__ = [
     # Client
-    "FormatExClient",
+    "FormaTexClient",
     "file_entry",
     # Result types
     "AsyncJob",
@@ -34,7 +34,7 @@ __all__ = [
     "SyntaxResult",
     "UsageStats",
     # Exceptions
-    "FormatExError",
+    "FormaTexError",
     "AuthenticationError",
     "CompilationError",
     "RateLimitError",

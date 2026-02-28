@@ -1,11 +1,11 @@
-"""Low-level HTTP transport for FormatEx API."""
+"""Low-level HTTP transport for FormaTex API."""
 
 from __future__ import annotations
 
 import httpx
 
-from formatex.exceptions import (
-    FormatExError,
+from FormaTex.exceptions import (
+    FormaTexError,
     AuthenticationError,
     CompilationError,
     RateLimitError,
@@ -91,4 +91,4 @@ class HTTPClient:
             retry = float(resp.headers.get("Retry-After", "0"))
             raise RateLimitError(msg, retry_after=retry, status_code=429, body=body)
 
-        raise FormatExError(msg, status_code=resp.status_code, body=body)
+        raise FormaTexError(msg, status_code=resp.status_code, body=body)
