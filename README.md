@@ -203,12 +203,6 @@ with FormaTexClient("fx_your_api_key") as client:
         print("Plan limit exceeded, upgrade at https://FormaTex.com/pricing")
 ```
 
-## Self-Hosted / Custom URL
-
-```python
-client = FormaTexClient("fx_key", base_url="https://latex.your-company.com")
-```
-
 ## Type Reference
 
 All types are importable directly from `FormaTex`:
@@ -223,3 +217,7 @@ All types are importable directly from `FormaTex`:
 | `SyntaxResult` | Syntax check: `valid`, `errors` |
 | `ConvertResult` | DOCX output: `docx` (bytes), `size_bytes` |
 | `UsageStats` | Quota: `compilations_used`, `compilations_limit`, `overage`, `period_start`, `period_end` |
+
+## License
+
+MIT

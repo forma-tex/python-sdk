@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: FormaTex API Documentation
+    url: https://formatex.io/docs
+    about: Full API reference
+  - name: FormaTex Dashboard
+    url: https://app.formatex.io
+    about: Manage API keys and billing
+  - name: Security Vulnerability
+    url: mailto:security@formatex.io
+    about: Report security issues privately
