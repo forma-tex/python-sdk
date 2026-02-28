@@ -11,10 +11,10 @@ Usage
 -----
 Set the base URL then run with the `e2e` marker:
 
-    $env:FormaTex_E2E_BASE_URL = "https://api-test.FormaTex.zedmed.online"
+    $env:FORMATEX_E2E_BASE_URL = "https://api-test.formatex.zedmed.online"
     pytest tests/test_e2e.py -v -m e2e
 
-If FormaTex_E2E_BASE_URL is not set the entire module is skipped automatically.
+If FORMATEX_E2E_BASE_URL is not set the entire module is skipped automatically.
 
 Note: These tests create a real user, make real compilations, and consume quota.
       They are intentionally excluded from the default `pytest` run.
@@ -44,13 +44,13 @@ from formatex.exceptions import CompilationError, PlanLimitError
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
-BASE_URL = os.environ.get("FormaTex_E2E_BASE_URL", "").strip().strip('"').strip("'").rstrip("/")
+BASE_URL = os.environ.get("FORMATEX_E2E_BASE_URL", "").strip().strip('"').strip("'").rstrip("/")
 
 pytestmark = pytest.mark.e2e
 
 if not BASE_URL:
     pytest.skip(
-        "FormaTex_E2E_BASE_URL not set — skipping e2e tests",
+        "FORMATEX_E2E_BASE_URL not set — skipping e2e tests",
         allow_module_level=True,
     )
 
