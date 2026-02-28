@@ -29,7 +29,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from FormaTex import (
+from formatex import (
     AsyncJob,
     CompileResult,
     ConvertResult,

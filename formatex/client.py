@@ -148,7 +148,7 @@ class FormaTexClient:
 
     Initialise with an API key obtained from the dashboard::
 
-        from FormaTex import FormaTexClient
+        from formatex import FormaTexClient
 
         client = FormaTexClient("fx_your_api_key")
 

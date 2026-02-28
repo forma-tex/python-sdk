@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from FormaTex import (
+from formatex import (
     AsyncJob,
     AuthenticationError,
     CompilationError,
